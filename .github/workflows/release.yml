@@ -1,0 +1,57 @@
+name: Build & publish .app on tag
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          swift --version
+          xcrun --show-sdk-version
+
+      - name: Build (release)
+        run: swift build -c release
+
+      - name: Assemble .app bundle
+        run: ./build.sh
+
+      - name: Verify bundle
+        run: |
+          test -d ClaudeUsageBar.app/Contents/MacOS/ClaudeUsageBar
+          /usr/libexec/PlistBuddy -c "Print :LSUIElement" ClaudeUsageBar.app/Contents/Info.plist
+          file ClaudeUsageBar.app/Contents/MacOS/ClaudeUsageBar
+
+      - name: Zip the bundle
+        run: |
+          /usr/bin/ditto -c -k --keepParent ClaudeUsageBar.app ClaudeUsageBar.zip
+          ls -lah ClaudeUsageBar.zip
+
+      - name: Create / update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Upsert: create the release if it doesn't exist yet, else just upload the asset.
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Auto-built ad-hoc-signed .app bundle for Apple Silicon (arm64).
+
+Install:
+\`\`\`bash
+curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
+\`\`\`"
+          fi
+          gh release upload "$TAG" ClaudeUsageBar.zip --clobber

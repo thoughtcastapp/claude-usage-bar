@@ -1,0 +1,34 @@
+# SwiftPM
+.build/
+Package.resolved
+.swiftpm/
+
+# Build artifacts (the .app is published as a GitHub Release asset, not committed)
+ClaudeUsageBar.app/
+*.zip
+*.dmg
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local secrets (defensive — none should ever be committed)
+.env
+.env.*
+*.pem
+*.p12
+secrets/
