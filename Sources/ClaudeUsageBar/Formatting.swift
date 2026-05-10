@@ -18,15 +18,12 @@ enum Formatting {
         return "\(rounded)%"
     }
 
-    /// Returns a relative + absolute description of when a quota resets, in French.
-    /// Examples:
-    ///   - past / under a minute      → "moins d'une minute"
-    ///   - same hour                  → "45m"
-    ///   - same day                   → "à 16h47 — dans 2h 47m"
-    ///   - within a week              → "mardi 12 à 13h00 — dans 3j 5h"
-    ///   - 7+ days out                → "le 19 mai à 13h00"
-    /// The absolute part is what users actually plan around; the relative gap is shown alongside
-    /// to give a quick sense of distance.
+    /// Returns the absolute "when" of a reset, in French.
+    ///   - past / < 1 min      → "moins d'une minute"
+    ///   - < 1h                → "dans 12 min"
+    ///   - same day            → "à 16h47"
+    ///   - within a week       → "mardi 12 à 13h00"
+    ///   - 7+ days out         → "le 19 mai à 13h00"
     static func resetText(from date: Date?, now: Date = Date()) -> String {
         guard let date else { return "—" }
         let interval = max(0, date.timeIntervalSince(now))
@@ -44,25 +41,41 @@ enum Formatting {
         }
         if days >= 1 {
             f.dateFormat = "EEEE d 'à' HH'h'mm"
-            let absolute = f.string(from: date)
-            let remHours = totalHours - days * 24
-            return "\(absolute) — dans \(days)j \(remHours)h"
+            return f.string(from: date)
         }
         if totalHours >= 1 {
             f.dateFormat = "HH'h'mm"
-            let mins = totalMinutes - totalHours * 60
-            return "à \(f.string(from: date)) — dans \(totalHours)h \(mins)m"
+            return "à " + f.string(from: date)
         }
-        return "\(totalMinutes)m"
+        return "dans \(totalMinutes) min"
+    }
+
+    /// Compact relative gap, useful as a subtle parenthetical next to the absolute time.
+    /// Returns nil for anything under an hour (where the absolute already implies "soon").
+    static func resetRelativeShort(from date: Date?, now: Date = Date()) -> String? {
+        guard let date else { return nil }
+        let interval = max(0, date.timeIntervalSince(now))
+        let totalMinutes = Int(interval / 60.0)
+        let totalHours = totalMinutes / 60
+        let days = totalHours / 24
+        if days >= 1 {
+            let remHours = totalHours - days * 24
+            return remHours == 0 ? "dans \(days) j" : "dans \(days)j \(remHours)h"
+        }
+        if totalHours >= 1 {
+            let mins = totalMinutes - totalHours * 60
+            return mins == 0 ? "dans \(totalHours)h" : "dans \(totalHours)h \(mins)m"
+        }
+        return nil
     }
 
     static func resetLine(from date: Date?, now: Date = Date()) -> String {
         let txt = resetText(from: date, now: now)
         if txt == "—" { return txt }
-        // Cases that already start with the absolute prefix get the verb attached directly.
-        if txt.starts(with: "le ") || txt.starts(with: "à ") { return "Reset \(txt)" }
-        // Pure relative string (no absolute) — fall back to the original phrasing.
-        return "Reset dans \(txt)"
+        if let rel = resetRelativeShort(from: date, now: now) {
+            return "Reset \(txt) · \(rel)"
+        }
+        return "Reset \(txt)"
     }
 
     static func tintColor(forPercent percent: Double) -> NSColor {

@@ -169,41 +169,34 @@ struct ContentView: View {
                         .opacity(0.4)
                         .padding(.vertical, 2)
 
-                    VStack(spacing: 6) {
+                    // Wider spacing between rows now that each one carries its own progress bar.
+                    VStack(spacing: 10) {
                         ForEach(entries, id: \.label) { entry in
                             StatChip(label: entry.label, percent: entry.percent)
                         }
                     }
                 }
 
-                resetFooter(date: weekly?.resetsAtDate, suffix: entries.isEmpty ? nil : "(s'applique à tous les modèles)")
+                resetFooter(date: weekly?.resetsAtDate)
             }
         }
     }
 
     // MARK: - Reset footer
 
-    /// Small footer line below a usage card showing when the bucket resets. The clock icon makes
-    /// the line immediately spotable; an optional suffix clarifies when the reset covers more than
-    /// just the headline metric (e.g. weekly + per-model breakdown).
-    private func resetFooter(date: Date?, suffix: String? = nil) -> some View {
-        HStack(alignment: .top, spacing: 5) {
+    /// Small footer line below a usage card showing when the bucket resets. With per-model
+    /// progress bars now visible inside the weekly card, the user already understands at a glance
+    /// that everything in the card shares the same reset window — no need for a second clarifier.
+    private func resetFooter(date: Date?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
             Image(systemName: "clock")
                 .font(.system(size: 10, weight: .regular))
                 .foregroundStyle(.secondary)
-                .padding(.top, 1)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(Formatting.resetLine(from: date))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let suffix {
-                    Text(suffix)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
+            Text(Formatting.resetLine(from: date))
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 4)
         }
         .padding(.top, 2)

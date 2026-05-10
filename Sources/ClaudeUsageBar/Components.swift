@@ -34,6 +34,7 @@ struct GlassCard<Content: View>: View {
 /// changes.
 struct UsageBar: View {
     let percent: Double
+    var height: CGFloat = 6
 
     private var clamped: Double {
         max(0.0, min(100.0, percent))
@@ -54,7 +55,7 @@ struct UsageBar: View {
                     .frame(width: max(2, geo.size.width * (clamped / 100.0)))
             }
         }
-        .frame(height: 6)
+        .frame(height: height)
     }
 }
 
@@ -67,27 +68,35 @@ struct StatChip: View {
     let percent: Double?
 
     var body: some View {
-        HStack(spacing: 6) {
-            Text(label)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .fixedSize()
-
-            Spacer(minLength: 8)
-
-            if let pct = percent {
-                Text(Formatting.percent(pct))
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(nsColor: Formatting.tintColor(forPercent: pct)))
-                    .monospacedDigit()
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 6) {
+                Text(label)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .fixedSize()
-            } else {
-                Text("—")
-                    .font(.system(size: 12, weight: .regular, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .fixedSize()
+
+                Spacer(minLength: 8)
+
+                if let pct = percent {
+                    Text(Formatting.percent(pct))
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(nsColor: Formatting.tintColor(forPercent: pct)))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .fixedSize()
+                } else {
+                    Text("—")
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
+                }
+            }
+
+            // Per-model progress bar — thinner than the main weekly/5h bars so the model rows
+            // visually nest under their parent card without competing for attention.
+            if let pct = percent {
+                UsageBar(percent: pct, height: 4)
             }
         }
     }
