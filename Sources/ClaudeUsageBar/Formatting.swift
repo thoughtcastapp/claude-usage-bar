@@ -79,9 +79,13 @@ enum Formatting {
     }
 
     static func tintColor(forPercent percent: Double) -> NSColor {
+        // Aggressive thresholds so users get warned early on a fixed weekly budget:
+        //   <  50%  green   — comfortable
+        //   50–80% orange   — watch it
+        //   >= 80% red      — close to the cap
         switch percent {
-        case ..<80: return .systemGreen
-        case ..<95: return .systemOrange
+        case ..<50: return .systemGreen
+        case ..<80: return .systemOrange
         default:    return .systemRed
         }
     }
