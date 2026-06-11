@@ -150,11 +150,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let button = statusItem.button else { return }
 
         // Claude Desktop closed → dimmed sleep icon, no percentage. Still clickable so the user
-        // can hit "Lancer Claude" or "Quitter" from the popover.
+        // can hit "Launch Claude" or "Quit" from the popover.
         if !store.claudeIsRunning {
             applySymbol(button: button, name: "moon.zzz", tint: .tertiaryLabelColor)
             button.title = ""
-            button.toolTip = "Claude Desktop n'est pas ouvert"
+            button.toolTip = "Claude Desktop isn't running"
             return
         }
 
@@ -170,7 +170,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
               let pct = five.utilization else {
             applySymbol(button: button, name: "circle.dashed", tint: .secondaryLabelColor)
             button.title = " …"
-            button.toolTip = store.isLoading ? "Chargement…" : "En attente de données"
+            button.toolTip = store.isLoading ? "Loading…" : "Waiting for data"
             return
         }
 
@@ -178,7 +178,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let tint = Formatting.tintColor(forPercent: pct)
         applySymbol(button: button, name: symbolName, tint: tint)
         button.title = " " + Formatting.percent(pct)
-        button.toolTip = "Claude — Session 5h: \(Formatting.percent(pct)) — \(Formatting.resetLine(from: five.resetsAtDate))"
+        button.toolTip = "Claude — 5-hour session: \(Formatting.percent(pct)) — \(Formatting.resetLine(from: five.resetsAtDate))"
     }
 
     private func applySymbol(button: NSStatusBarButton, name: String, tint: NSColor) {
@@ -209,7 +209,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let host = NSHostingController(rootView: root)
         // Both options together let SwiftUI's intrinsic size drive the popover's `contentSize`.
         // Without `.preferredContentSize` the popover sometimes picks an undersized initial frame
-        // and clips content (especially with French strings longer than English ones).
+        // and clips content.
         host.sizingOptions = [.intrinsicContentSize, .preferredContentSize]
         p.contentViewController = host
         popover = p
@@ -237,7 +237,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if rightClickMenu == nil {
             let menu = NSMenu()
             menu.autoenablesItems = false
-            let item = NSMenuItem(title: "Quitter", action: #selector(quit), keyEquivalent: "q")
+            let item = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
             item.target = self
             item.keyEquivalentModifierMask = [.command]
             menu.addItem(item)

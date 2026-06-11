@@ -18,36 +18,36 @@ enum Formatting {
         return "\(rounded)%"
     }
 
-    /// Returns the absolute "when" of a reset, in French.
-    ///   - past / < 1 min      → "moins d'une minute"
-    ///   - < 1h                → "dans 12 min"
-    ///   - same day            → "à 16h47"
-    ///   - within a week       → "mardi 12 à 13h00"
-    ///   - 7+ days out         → "le 19 mai à 13h00"
+    /// Returns the absolute "when" of a reset, in English.
+    ///   - past / < 1 min      → "in less than a minute"
+    ///   - < 1h                → "in 12 min"
+    ///   - same day            → "at 4:47 PM"
+    ///   - within a week       → "Tuesday at 1:00 PM"
+    ///   - 7+ days out         → "on May 19 at 1:00 PM"
     static func resetText(from date: Date?, now: Date = Date()) -> String {
         guard let date else { return "—" }
         let interval = max(0, date.timeIntervalSince(now))
-        if interval < 60 { return "moins d'une minute" }
+        if interval < 60 { return "in less than a minute" }
         let totalMinutes = Int(interval / 60.0)
         let totalHours = totalMinutes / 60
         let days = totalHours / 24
 
         let f = DateFormatter()
-        f.locale = Locale(identifier: "fr_FR")
+        f.locale = Locale(identifier: "en_US")
 
         if days >= 7 {
-            f.dateFormat = "d MMM 'à' HH'h'mm"
-            return "le " + f.string(from: date)
+            f.dateFormat = "MMM d 'at' h:mm a"
+            return "on " + f.string(from: date)
         }
         if days >= 1 {
-            f.dateFormat = "EEEE d 'à' HH'h'mm"
+            f.dateFormat = "EEEE 'at' h:mm a"
             return f.string(from: date)
         }
         if totalHours >= 1 {
-            f.dateFormat = "HH'h'mm"
-            return "à " + f.string(from: date)
+            f.dateFormat = "h:mm a"
+            return "at " + f.string(from: date)
         }
-        return "dans \(totalMinutes) min"
+        return "in \(totalMinutes) min"
     }
 
     /// Compact relative gap, useful as a subtle parenthetical next to the absolute time.
@@ -60,11 +60,11 @@ enum Formatting {
         let days = totalHours / 24
         if days >= 1 {
             let remHours = totalHours - days * 24
-            return remHours == 0 ? "dans \(days) j" : "dans \(days)j \(remHours)h"
+            return remHours == 0 ? "in \(days)d" : "in \(days)d \(remHours)h"
         }
         if totalHours >= 1 {
             let mins = totalMinutes - totalHours * 60
-            return mins == 0 ? "dans \(totalHours)h" : "dans \(totalHours)h \(mins)m"
+            return mins == 0 ? "in \(totalHours)h" : "in \(totalHours)h \(mins)m"
         }
         return nil
     }
@@ -73,9 +73,9 @@ enum Formatting {
         let txt = resetText(from: date, now: now)
         if txt == "—" { return txt }
         if let rel = resetRelativeShort(from: date, now: now) {
-            return "Reset \(txt) · \(rel)"
+            return "Resets \(txt) · \(rel)"
         }
-        return "Reset \(txt)"
+        return "Resets \(txt)"
     }
 
     static func tintColor(forPercent percent: Double) -> NSColor {
@@ -140,31 +140,31 @@ enum Formatting {
     static func formatMoney(_ amount: Double, currency: String?) -> String {
         let f = NumberFormatter()
         f.numberStyle = .decimal
-        f.locale = Locale(identifier: "fr_FR")
+        f.locale = Locale(identifier: "en_US")
         f.minimumFractionDigits = 2
         f.maximumFractionDigits = 2
         let str = f.string(from: NSNumber(value: amount)) ?? String(format: "%.2f", amount)
         let sym = currencySymbol(currency)
-        return sym.isEmpty ? str : "\(str) \(sym)"
+        return sym.isEmpty ? str : "\(sym)\(str)"
     }
 
     static func formatInt(_ amount: Double, currency: String?) -> String {
         let f = NumberFormatter()
         f.numberStyle = .decimal
-        f.locale = Locale(identifier: "fr_FR")
+        f.locale = Locale(identifier: "en_US")
         f.maximumFractionDigits = 0
         let str = f.string(from: NSNumber(value: amount)) ?? String(format: "%.0f", amount)
         let sym = currencySymbol(currency)
-        return sym.isEmpty ? str : "\(str) \(sym)"
+        return sym.isEmpty ? str : "\(sym)\(str)"
     }
 
     static func relativeAge(seconds: TimeInterval) -> String {
         let s = Int(seconds.rounded())
-        if s < 5 { return "à l'instant" }
-        if s < 60 { return "il y a \(s)s" }
+        if s < 5 { return "just now" }
+        if s < 60 { return "\(s)s ago" }
         let m = s / 60
-        if m < 60 { return "il y a \(m) min" }
+        if m < 60 { return "\(m) min ago" }
         let h = m / 60
-        return "il y a \(h)h\(String(format: "%02d", m - h * 60))"
+        return "\(h)h \(String(format: "%02d", m - h * 60))m ago"
     }
 }

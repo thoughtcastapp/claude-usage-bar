@@ -11,13 +11,13 @@ struct ContentView: View {
     let onLaunchClaude: () -> Void
     let onQuit: () -> Void
 
-    /// A monotonically increasing tick used to refresh "il y a Xs" labels every second.
+    /// A monotonically increasing tick used to refresh "Xs ago" labels every second.
     @State private var clockTick: Int = 0
     private let clockTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         // Reading `clockTick` here ensures `body` re-evaluates each second so the
-        // "Mis à jour il y a Xs" footer label stays current.
+        // "Updated Xs ago" footer label stays current.
         let _ = clockTick
 
         return VStack(alignment: .leading, spacing: 14) {
@@ -98,7 +98,7 @@ struct ContentView: View {
     private func fiveHourCard(snapshot: UsageSnapshot) -> some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 10) {
-                SectionHeader("Session 5h")
+                SectionHeader("5-hour session")
 
                 HStack(alignment: .firstTextBaseline) {
                     if let pct = snapshot.usage.five_hour?.utilization {
@@ -153,7 +153,7 @@ struct ContentView: View {
                 let weekly = snapshot.usage.seven_day
                 let entries = activeModelEntries(snapshot.usage)
                 SectionHeader(
-                    "Hebdo",
+                    "Weekly",
                     trailing: weekly?.utilization.map { Formatting.percent($0) }
                 )
 
@@ -207,7 +207,7 @@ struct ContentView: View {
     private func overageCard(extra: ExtraUsage) -> some View {
         GlassCard {
             VStack(alignment: .leading, spacing: 8) {
-                SectionHeader("Crédits overage")
+                SectionHeader("Overage credits")
 
                 // Anthropic returns these in the smallest currency unit (e.g. cents for EUR/USD).
                 // Convert to the major unit before formatting so 40 → 0,40 € and 1700 → 17 €.
@@ -248,7 +248,7 @@ struct ContentView: View {
             HStack(spacing: 10) {
                 ProgressView()
                     .controlSize(.small)
-                Text("Chargement…")
+                Text("Loading…")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -263,7 +263,7 @@ struct ContentView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Color(nsColor: .systemRed))
-                    Text("Erreur")
+                    Text("Error")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.primary)
                     Spacer()
@@ -283,19 +283,19 @@ struct ContentView: View {
                     Image(systemName: "moon.zzz.fill")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(.secondary)
-                    Text("Claude Desktop n'est pas ouvert")
+                    Text("Claude Desktop isn't running")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.primary)
                     Spacer()
                 }
-                Text("L'app se met en veille tant que Claude n'est pas lancé.")
+                Text("The widget sleeps until Claude is launched.")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack {
                     Spacer()
-                    PrimaryButton(title: "Lancer Claude", systemImage: "play.fill", action: onLaunchClaude)
+                    PrimaryButton(title: "Launch Claude", systemImage: "play.fill", action: onLaunchClaude)
                 }
                 .padding(.top, 2)
             }
@@ -333,11 +333,11 @@ struct ContentView: View {
             Group {
                 if let snap = store.snapshot {
                     let age = Date().timeIntervalSince(snap.fetchedAt)
-                    Text("Mis à jour " + Formatting.relativeAge(seconds: age))
+                    Text("Updated " + Formatting.relativeAge(seconds: age))
                 } else if store.isLoading {
-                    Text("Chargement…")
+                    Text("Loading…")
                 } else {
-                    Text("En attente de données")
+                    Text("Waiting for data")
                 }
             }
             .font(.system(size: 10))
@@ -356,10 +356,10 @@ struct ContentView: View {
 
     private var toolbar: some View {
         HStack(spacing: 8) {
-            IconButton(systemImage: "arrow.clockwise", help: "Rafraîchir maintenant", action: onRefresh)
-            PrimaryButton(title: "Ouvrir Claude", systemImage: "arrow.up.right.square", action: onLaunchClaude)
+            IconButton(systemImage: "arrow.clockwise", help: "Refresh now", action: onRefresh)
+            PrimaryButton(title: "Open Claude", systemImage: "arrow.up.right.square", action: onLaunchClaude)
             Spacer(minLength: 4)
-            IconButton(systemImage: "xmark", help: "Quitter", action: onQuit)
+            IconButton(systemImage: "xmark", help: "Quit", action: onQuit)
         }
     }
 }

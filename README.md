@@ -26,6 +26,44 @@ Total: **~10 seconds.** No Xcode, no Homebrew, no Swift toolchain required.
 
 ---
 
+## Start at login
+
+Either add the app in **System Settings → General → Login Items**, or drop a LaunchAgent into `~/Library/LaunchAgents`:
+
+```bash
+cat > ~/Library/LaunchAgents/com.user.claudeusagebar.plist <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.claudeusagebar</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/open</string>
+        <string>-a</string>
+        <string>/Applications/ClaudeUsageBar.app</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+EOF
+```
+
+macOS picks the file up automatically at every login — no `launchctl` invocation needed.
+
+## Uninstall
+
+```bash
+rm ~/Library/LaunchAgents/com.user.claudeusagebar.plist   # remove auto-start (if you added it)
+rm -rf /Applications/ClaudeUsageBar.app                    # remove the app
+```
+
+The widget stores nothing else on disk — no caches, no preferences, no background daemons.
+
+---
+
 ## What you get
 
 A status item in the right side of the menu bar showing your current 5-hour session utilization (e.g. `◐ 76%`), tinted **green / orange / red** as you approach the cap.
@@ -34,10 +72,10 @@ Click it for a SwiftUI popover with the full breakdown:
 
 | Section | Content |
 |---|---|
-| **Session 5h** | Big headline percent, animated progress bar, live "reset dans 2h 47m" |
-| **Hebdo** | Weekly utilization, plus per-model split: Sonnet, Opus, Cowork |
-| **Crédits overage** | How much overage spend you've used vs. your monthly cap |
-| **Footer** | Plan tier (e.g. `Claude Max 5x`), "Mis à jour il y a Xs" |
+| **5-hour session** | Big headline percent, animated progress bar, live "resets in 2h 47m" |
+| **Weekly** | Weekly utilization, plus per-model split: Sonnet, Opus, Cowork |
+| **Overage credits** | How much overage spend you've used vs. your monthly cap |
+| **Footer** | Plan tier (e.g. `Claude Max 5x`), "Updated Xs ago" |
 | **Toolbar** | Refresh now · Open Claude · Quit |
 
 Right-click the icon for a tiny escape menu with just **Quit**.
